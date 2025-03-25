@@ -23,77 +23,90 @@
       border: none;
       cursor: pointer;
     }
-    #send-btn {
+    #submit-btn {
       margin-top: 20px;
-      padding: 10px;
-      background-color: #28a745;
+      padding: 10px 20px;
+      font-size: 16px;
+      background: green;
       color: white;
       border: none;
       cursor: pointer;
+      display: none;
+    }
+    #message {
+      margin-top: 20px;
+      font-size: 18px;
+      color: green;
       display: none;
     }
   </style>
 </head>
 <body>
 
-<h2>Выбери цвета по порядку</h2>
-<div id="color-grid"></div>
-<button id="send-btn" onclick="sendResult()">Отправить</button>
+  <h2>Выбери цвета в порядке предпочтения</h2>
+  <div id="color-grid"></div>
+  <button id="submit-btn" onclick="sendResult()">Отправить</button>
+  <p id="message">Результаты получены, возвращайся в бот!</p>
 
-<script>
-  const webhookURL = "https://hook.eu2.make.com/6jj3m26b25ll7tv8cuz9vg55pojnbap6";
+  <script>
+    const colors = [
+      { name: "Синий", hex: "#0000FF" },
+      { name: "Зеленый", hex: "#008000" },
+      { name: "Красный", hex: "#FF0000" },
+      { name: "Желтый", hex: "#FFFF00" },
+      { name: "Фиолетовый", hex: "#800080" },
+      { name: "Коричневый", hex: "#A52A2A" },
+      { name: "Черный", hex: "#000000" },
+      { name: "Серый", hex: "#808080" }
+    ];
 
-  const colors = [
-    { color: "blue", id: 1 },
-    { color: "green", id: 2 },
-    { color: "red", id: 3 },
-    { color: "yellow", id: 4 },
-    { color: "purple", id: 5 },
-    { color: "brown", id: 6 },
-    { color: "black", id: 7 },
-    { color: "gray", id: 8 }
-  ];
+    const selectedOrder = [];
+    const colorGrid = document.getElementById("color-grid");
+    const submitBtn = document.getElementById("submit-btn");
+    const message = document.getElementById("message");
 
-  const selectedOrder = [];
-
-  function renderColors() {
-    const grid = document.getElementById("color-grid");
-    grid.innerHTML = "";
-    colors.forEach(({ color, id }) => {
-      const btn = document.createElement("button");
-      btn.classList.add("color-btn");
-      btn.style.background = color;
-      btn.onclick = () => selectColor(id, btn);
-      grid.appendChild(btn);
-    });
-  }
-
-  function selectColor(id, btn) {
-    selectedOrder.push(id);
-    btn.remove(); // Удаляем кнопку после выбора
-    if (selectedOrder.length === colors.length) {
-      document.getElementById("send-btn").style.display = "block";
+    function renderColors() {
+      colorGrid.innerHTML = "";
+      colors.forEach((color, index) => {
+        if (!selectedOrder.includes(index)) {
+          const btn = document.createElement("button");
+          btn.className = "color-btn";
+          btn.style.background = color.hex;
+          btn.onclick = () => chooseColor(index);
+          colorGrid.appendChild(btn);
+        }
+      });
     }
-  }
 
-  function sendResult() {
-    fetch(webhookURL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ order: selectedOrder })
-    })
-    .then(response => response.json())
-    .then(data => {
-      console.log("Успешно отправлено:", data);
-      document.body.innerHTML = "<h2>Результаты получены, возвращайся в бот!</h2>";
-    })
-    .catch(error => console.error("Ошибка:", error));
-  }
+    function chooseColor(index) {
+      selectedOrder.push(index + 1); // +1 чтобы нумерация шла с 1
+      renderColors();
+      if (selectedOrder.length === colors.length) {
+        submitBtn.style.display = "block";
+      }
+    }
 
-  renderColors();
-</script>
+    function sendResult() {
+      const webhookUrl = "https://hook.eu2.make.com/qhbbx786kvg96gvpgru3kacap9elhtkf";
+      const data = selectedOrder.join(","); // Отправляем в виде "3,1,7,5,6,2,8,4"
+
+      fetch(webhookUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain"
+        },
+        body: data
+      })
+      .then(response => response.text())
+      .then(() => {
+        message.style.display = "block"; // Показываем сообщение
+        submitBtn.style.display = "none"; // Убираем кнопку
+      })
+      .catch(error => console.error("Ошибка при отправке данных:", error));
+    }
+
+    renderColors();
+  </script>
 
 </body>
 </html>
