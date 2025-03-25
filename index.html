@@ -57,47 +57,52 @@
 
 <script>
   let selectedColors = [];
+  let userId = Telegram.WebApp.initDataUnsafe.user.id; // Получаем user_id из Telegram Web App
 
   function chooseColor(colorCode, btnElement) {
     // Если цвет уже выбран, не добавляем
     if (selectedColors.includes(colorCode)) return;
 
     selectedColors.push(colorCode);
-    
-    // Удаляем кнопку
-    btnElement.style.display = 'none';
 
-    // Если выбрано все 8 цветов, активируем кнопку отправки
+    // Удаляем кнопку
+    btnElement.remove();
+
+    // Если выбраны все 8 цветов, активируем кнопку отправки
     if (selectedColors.length === 8) {
       document.getElementById('send-button').disabled = false;
     }
   }
 
   function sendResult() {
-    const webhookUrl = "https://hook.eu2.make.com/6jj3m26b25ll7tv8cuz9vg55pojnbap6";
+    const webhookUrl = "https://your-webhook-url.com"; // Замените на ваш реальный URL
 
-    // Отправляем массив цифр, без дополнительных данных
+    const payload = {
+      user_id: userId, // Передаем user_id
+      colors: selectedColors
+    };
+
     fetch(webhookUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(selectedColors) // Только цифры цветов
+      body: JSON.stringify(payload)
     })
     .then(response => {
       if (response.ok) {
-        document.getElementById('status-message').style.display = 'block';  // Показать сообщение об успешной отправке
-        document.getElementById('send-button').style.display = 'none';  // Скрыть кнопку
+        document.getElementById('status-message').style.display = 'block';
+        document.getElementById('send-button').style.display = 'none';
         setTimeout(() => {
-          window.Telegram.WebApp.close();  // Закрыть веб-приложение
-        }, 3000);  // Через 3 секунды
+          window.Telegram.WebApp.close(); // Закрываем WebApp
+        }, 2000); // Закрытие через 2 секунды
       } else {
-        alert("Ошибка при отправке данных.");
+        alert("Ошибка при отправке данных. Попробуйте снова.");
       }
     })
     .catch(error => {
       console.error("Ошибка при отправке данных:", error);
-      alert("Ошибка при отправке данных.");
+      alert("Ошибка при отправке данных. Попробуйте снова.");
     });
   }
 </script>
