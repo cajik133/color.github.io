@@ -18,95 +18,85 @@
       margin-top: 20px;
     }
     .color-btn {
-      width: 80px;
-      height: 80px;
+      width: 50px;
+      height: 50px;
       border: none;
       cursor: pointer;
     }
-    #submit-btn {
+    #send-button {
       margin-top: 20px;
-      padding: 10px 20px;
+      padding: 10px;
       font-size: 16px;
-      background: green;
-      color: white;
-      border: none;
       cursor: pointer;
-      display: none;
-    }
-    #message {
-      margin-top: 20px;
-      font-size: 18px;
-      color: green;
-      display: none;
     }
   </style>
 </head>
 <body>
 
-  <h2>Выбери цвета в порядке предпочтения</h2>
-  <div id="color-grid"></div>
-  <button id="submit-btn" onclick="sendResult()">Отправить</button>
-  <p id="message">Результаты получены, возвращайся в бот!</p>
+<h2>Выбери самый приятный цвет</h2>
+<div id="color-grid">
+  <button class="color-btn" style="background: blue;" onclick="chooseColor('blue', this)"></button>
+  <button class="color-btn" style="background: red;" onclick="chooseColor('red', this)"></button>
+  <button class="color-btn" style="background: green;" onclick="chooseColor('green', this)"></button>
+  <button class="color-btn" style="background: yellow;" onclick="chooseColor('yellow', this)"></button>
+  <button class="color-btn" style="background: purple;" onclick="chooseColor('purple', this)"></button>
+  <button class="color-btn" style="background: brown;" onclick="chooseColor('brown', this)"></button>
+  <button class="color-btn" style="background: gray;" onclick="chooseColor('gray', this)"></button>
+  <button class="color-btn" style="background: black;" onclick="chooseColor('black', this)"></button>
+</div>
 
-  <script>
-    const colors = [
-      { name: "Синий", hex: "#0000FF" },
-      { name: "Зеленый", hex: "#008000" },
-      { name: "Красный", hex: "#FF0000" },
-      { name: "Желтый", hex: "#FFFF00" },
-      { name: "Фиолетовый", hex: "#800080" },
-      { name: "Коричневый", hex: "#A52A2A" },
-      { name: "Черный", hex: "#000000" },
-      { name: "Серый", hex: "#808080" }
-    ];
+<button id="send-button" onclick="sendResult()" disabled>Отправить</button>
 
-    const selectedOrder = [];
-    const colorGrid = document.getElementById("color-grid");
-    const submitBtn = document.getElementById("submit-btn");
-    const message = document.getElementById("message");
+<script>
+  let selectedColors = [];
 
-    function renderColors() {
-      colorGrid.innerHTML = "";
-      colors.forEach((color, index) => {
-        if (!selectedOrder.includes(index)) {
-          const btn = document.createElement("button");
-          btn.className = "color-btn";
-          btn.style.background = color.hex;
-          btn.onclick = () => chooseColor(index);
-          colorGrid.appendChild(btn);
-        }
-      });
+  function chooseColor(color, btnElement) {
+    // Если цвет уже выбран, не добавляем
+    if (selectedColors.includes(color)) return;
+
+    selectedColors.push(color);
+    
+    // Удаляем выбранную кнопку
+    btnElement.style.display = 'none';
+
+    // Если выбрано все 8 цветов, активируем кнопку отправки
+    if (selectedColors.length === 8) {
+      document.getElementById('send-button').disabled = false;
+    }
+  }
+
+  function sendResult() {
+    const webhookUrl = "https://hook.eu2.make.com/6jj3m26b25ll7tv8cuz9vg55pojnbap6";
+
+    // Проверяем, что все цвета выбраны
+    if (selectedColors.length < 8) {
+      alert("Выберите все 8 цветов перед отправкой!");
+      return;
     }
 
-    function chooseColor(index) {
-      selectedOrder.push(index + 1); // +1 чтобы нумерация шла с 1
-      renderColors();
-      if (selectedOrder.length === colors.length) {
-        submitBtn.style.display = "block";
+    fetch(webhookUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: new URLSearchParams({
+        "colors": selectedColors.join(',')  // Передаем данные через form data
+      })
+    })
+    .then(response => {
+      if (response.ok) {
+        alert("Результаты получены, возвращайся в бот!");
+        window.Telegram.WebApp.close();
+      } else {
+        return response.text().then(text => { throw new Error(text); });
       }
-    }
-
-    function sendResult() {
-      const webhookUrl = "https://hook.eu2.make.com/6jj3m26b25ll7tv8cuz9vg55pojnbap6";
-      const data = selectedOrder.join(","); // Отправляем в виде "3,1,7,5,6,2,8,4"
-
-      fetch(webhookUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "text/plain"
-        },
-        body: data
-      })
-      .then(response => response.text())
-      .then(() => {
-        message.style.display = "block"; // Показываем сообщение
-        submitBtn.style.display = "none"; // Убираем кнопку
-      })
-      .catch(error => console.error("Ошибка при отправке данных:", error));
-    }
-
-    renderColors();
-  </script>
+    })
+    .catch(error => {
+      console.error("Ошибка при отправке данных:", error);
+      alert("Ошибка при отправке данных. Попробуй снова.");
+    });
+  }
+</script>
 
 </body>
 </html>
