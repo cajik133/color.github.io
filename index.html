@@ -5,18 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Тест Люшера</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #color-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .color-btn {
+            width: 100px;  /* Ширина кнопки */
+            height: 100px; /* Высота кнопки */
+            border-radius: 50%; /* Делаем кнопки круглыми */
+            cursor: pointer;
+            margin: 10px; /* Отступы между кнопками */
+        }
+
+        #send-result {
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 
 <h2>Выбери самый приятный цвет</h2>
 <div id="color-grid">
-    <button class="color-btn" style="background: blue;" onclick="chooseColor('blue', this)"></button>
-    <button class="color-btn" style="background: red;" onclick="chooseColor('red', this)"></button>
-    <button class="color-btn" style="background: green;" onclick="chooseColor('green', this)"></button>
-    <button class="color-btn" style="background: yellow;" onclick="chooseColor('yellow', this)"></button>
-    <button class="color-btn" style="background: purple;" onclick="chooseColor('purple', this)"></button>
-    <button class="color-btn" style="background: brown;" onclick="chooseColor('brown', this)"></button>
-    <button class="color-btn" style="background: gray;" onclick="chooseColor('gray', this)"></button>
+    <button class="color-btn" style="background: blue;" onclick="chooseColor(1)"></button>
+    <button class="color-btn" style="background: green;" onclick="chooseColor(2)"></button>
+    <button class="color-btn" style="background: red;" onclick="chooseColor(3)"></button>
+    <button class="color-btn" style="background: yellow;" onclick="chooseColor(4)"></button>
+    <button class="color-btn" style="background: purple;" onclick="chooseColor(5)"></button>
+    <button class="color-btn" style="background: brown;" onclick="chooseColor(6)"></button>
+    <button class="color-btn" style="background: black;" onclick="chooseColor(7)"></button>
+    <button class="color-btn" style="background: gray;" onclick="chooseColor(8)"></button>
 </div>
 
 <button id="send-result" onclick="sendResult()">Отправить</button>
@@ -24,53 +54,41 @@
 <script>
     let selectedColors = [];
 
-    function chooseColor(color, button) {
+    function chooseColor(color) {
         if (selectedColors.includes(color)) return;
+
         selectedColors.push(color);
 
-        // Скрываем выбранную кнопку
-        button.style.display = "none";
+        document.querySelectorAll(".color-btn")[color - 1].style.display = "none";
 
-        // Показываем кнопку отправки только после выбора 8 цветов
         if (selectedColors.length === 8) {
             document.getElementById("send-result").style.display = "block";
         }
     }
 
-    async function sendResult() {
-        try {
-            // Логируем выбранные цвета
-            console.log("Выбранные цвета:", selectedColors);
+    function sendResult() {
+        // Пример отправки данных (выбранные цвета) через POST запрос на Webhook URL
+        const selectedColorsStr = selectedColors.map(color => {
+            return ['blue', 'green', 'red', 'yellow', 'purple', 'brown', 'black', 'gray'][color - 1];
+        });
 
-            // Подготовка данных для отправки в Make (Webhook URL)
-            const webhookUrl = "https://hook.eu2.make.com/xui59pgz9z62yeav743xawy2jlegiyar"; // Замените на ваш URL
+        fetch('https://hook.eu2.make.com/xxxxx', { // Вставь свой Webhook URL
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({colors: selectedColorsStr}) // Отправляем данные в формате JSON
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Data sent successfully', data);
 
-            const response = await fetch(webhookUrl, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    selectedColors: selectedColors
-                }),
-            });
-
-            // Если отправка прошла успешно
-            if (response.ok) {
-                console.log("Данные успешно отправлены!");
-                // Закрываем WebApp и скрываем кнопку
-                Telegram.WebApp.close();
-            } else {
-                console.error("Ошибка при отправке данных:", response.statusText);
-            }
-            
-            // Скрыть кнопку отправки
-            document.getElementById("send-result").style.display = "none";
-
-        } catch (error) {
-            console.error("Ошибка при отправке данных:", error);
-            alert("Произошла ошибка при отправке данных.");
-        }
+            // Закрытие страницы после отправки
+            window.close();
+        })
+        .catch(error => {
+            console.error('Error sending data', error);
+        });
     }
 </script>
 
