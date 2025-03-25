@@ -11,27 +11,30 @@
             text-align: center;
             padding: 20px;
         }
-
         #color-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
             margin-top: 20px;
         }
-
         .color-btn {
-            width: 100px;  /* Ширина кнопки */
-            height: 100px; /* Высота кнопки */
-            border-radius: 50%; /* Делаем кнопки круглыми */
+            width: 80px;
+            height: 80px;
+            border: none;
             cursor: pointer;
-            margin: 10px; /* Отступы между кнопками */
         }
-
-        #send-result {
+        #send-btn {
             margin-top: 20px;
-            padding: 10px;
+            padding: 10px 20px;
             font-size: 16px;
             cursor: pointer;
+        }
+        #status-message {
+            display: none;
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: green;
         }
     </style>
 </head>
@@ -39,69 +42,54 @@
 
 <h2>Выбери самый приятный цвет</h2>
 <div id="color-grid">
-    <button class="color-btn" style="background: blue;" onclick="chooseColor(1)"></button>
-    <button class="color-btn" style="background: green;" onclick="chooseColor(2)"></button>
-    <button class="color-btn" style="background: red;" onclick="chooseColor(3)"></button>
-    <button class="color-btn" style="background: yellow;" onclick="chooseColor(4)"></button>
-    <button class="color-btn" style="background: purple;" onclick="chooseColor(5)"></button>
-    <button class="color-btn" style="background: brown;" onclick="chooseColor(6)"></button>
-    <button class="color-btn" style="background: black;" onclick="chooseColor(7)"></button>
-    <button class="color-btn" style="background: gray;" onclick="chooseColor(8)"></button>
+    <button class="color-btn" style="background: blue;" onclick="chooseColor('blue')"></button>
+    <button class="color-btn" style="background: red;" onclick="chooseColor('red')"></button>
+    <button class="color-btn" style="background: green;" onclick="chooseColor('green')"></button>
+    <button class="color-btn" style="background: yellow;" onclick="chooseColor('yellow')"></button>
+    <button class="color-btn" style="background: purple;" onclick="chooseColor('purple')"></button>
+    <button class="color-btn" style="background: brown;" onclick="chooseColor('brown')"></button>
+    <button class="color-btn" style="background: black;" onclick="chooseColor('black')"></button>
+    <button class="color-btn" style="background: gray;" onclick="chooseColor('gray')"></button>
 </div>
 
-<button id="send-result" onclick="sendResult()">Отправить</button>
-<p id="status-message" style="display: none; font-weight: bold; margin-top: 20px;"</p>
+<button id="send-btn" onclick="sendResult()">Отправить</button>
+<p id="status-message">Результаты получены, возвращайся в бот</p>
+
 <script>
-    let selectedColors = [];
+    let chosenColors = [];
 
     function chooseColor(color) {
-        if (selectedColors.includes(color)) return;
-
-        selectedColors.push(color);
-
-        document.querySelectorAll(".color-btn")[color - 1].style.display = "none";
-
-        if (selectedColors.length === 8) {
-            document.getElementById("send-result").style.display = "block";
-        }
+        chosenColors.push(color);
+        document.querySelector(`button[style="background: ${color};"]`).remove();
     }
 
     function sendResult() {
-        const webhookUrl = "https://hook.eu2.make.com/xui59pgz9z62yeav743xawy2jlegiyar";  // Вставь сюда свой Webhook URL
-
-        // Проверяем, есть ли данные
-        if (selectedColors.length === 0) {
-            alert("Вы не выбрали ни одного цвета!");
+        if (chosenColors.length < 8) {
+            alert("Выбери все цвета перед отправкой!");
             return;
         }
 
-        // Отправляем данные
-        fetch(webhookUrl, {
+        fetch("https://hook.eu2.make.com/xui59pgz9z62yeav743xawy2jlegiyar", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ colors: selectedColors })
+            body: JSON.stringify({ colors: chosenColors })
         })
         .then(response => {
             if (response.ok) {
-                document.getElementById("send-btn").style.display = "none";  // Скрываем кнопку
-                document.getElementById("status-message").style.display = "block";  // Показываем сообщение
+                document.getElementById("send-btn").style.display = "none";
+                document.getElementById("status-message").style.display = "block";
             } else {
-                alert("Ошибка при отправке данных!");
+                alert("Ошибка при отправке данных");
             }
         })
         .catch(error => {
             console.error("Ошибка:", error);
-            alert("Ошибка при соединении с сервером!");
+            alert("Ошибка при отправке данных");
         });
     }
 </script>
-
-<p id="status-message" style="display: none; font-weight: bold; color: green;">
-    Результаты получены, возвращайся в бот!
-</p>
-
 
 </body>
 </html>
