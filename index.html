@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест Люшера</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<h2>Выбери самый приятный цвет</h2>
+<div id="color-grid">
+    <button class="color-btn" style="background: blue;" onclick="chooseColor(1)"></button>
+    <button class="color-btn" style="background: green;" onclick="chooseColor(2)"></button>
+    <button class="color-btn" style="background: red;" onclick="chooseColor(3)"></button>
+    <button class="color-btn" style="background: yellow;" onclick="chooseColor(4)"></button>
+    <button class="color-btn" style="background: purple;" onclick="chooseColor(5)"></button>
+    <button class="color-btn" style="background: brown;" onclick="chooseColor(6)"></button>
+    <button class="color-btn" style="background: black;" onclick="chooseColor(7)"></button>
+    <button class="color-btn" style="background: gray;" onclick="chooseColor(8)"></button>
+</div>
+
+<button id="send-result" onclick="sendResult()">Отправить</button>
+
+<script src="script.js"></script>
+
+</body>
+</html>
