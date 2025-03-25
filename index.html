@@ -6,32 +6,6 @@
     <title>Тест Люшера</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-        }
-        #color-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .color-btn {
-            width: 60px;
-            height: 60px;
-            border: none;
-            cursor: pointer;
-        }
-        #send-result {
-            margin-top: 20px;
-            padding: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            display: none;
-        }
-    </style>
 </head>
 <body>
 
@@ -44,7 +18,6 @@
     <button class="color-btn" style="background: purple;" onclick="chooseColor('purple', this)"></button>
     <button class="color-btn" style="background: brown;" onclick="chooseColor('brown', this)"></button>
     <button class="color-btn" style="background: gray;" onclick="chooseColor('gray', this)"></button>
-    <button class="color-btn" style="background: black;" onclick="chooseColor('black', this)"></button>
 </div>
 
 <button id="send-result" onclick="sendResult()">Отправить</button>
@@ -52,41 +25,38 @@
 <script>
     let selectedColors = [];
 
-    function chooseColor(color, btnElement) {
-        // Добавляем выбранный цвет в массив
-        if (!selectedColors.includes(color)) {
-            selectedColors.push(color);
-        }
+    function chooseColor(color, button) {
+        if (selectedColors.includes(color)) return;
+        selectedColors.push(color);
+        
         // Скрываем выбранную кнопку
-        btnElement.style.display = 'none';
+        button.style.display = "none";
 
-        // Когда все 8 цветов выбраны, показываем кнопку "Отправить"
+        // Показываем кнопку отправки только после выбора 8 цветов
         if (selectedColors.length === 8) {
             document.getElementById("send-result").style.display = "block";
         }
     }
 
-    function sendResult() {
-        // Проверяем, отправляем ли мы данные
-        if (selectedColors.length < 8) {
-            alert("Выберите все 8 цветов!");
-            return;
+    // Асинхронная функция для отправки результата
+    async function sendResult() {
+        try {
+            // Отправка данных через Telegram WebApp
+            await Telegram.WebApp.sendData(JSON.stringify(selectedColors));
+            
+            // Скрываем кнопку отправки
+            document.getElementById("send-result").style.display = "none";
+
+            // Закрываем веб-приложение Telegram
+            Telegram.WebApp.close();
+        } catch (error) {
+            console.error("Ошибка при отправке данных:", error);
+            alert("Что-то пошло не так. Попробуйте снова.");
         }
-
-        // Получаем данные через Telegram Web App API
-        const tg = window.Telegram.WebApp;
-        
-        // Выводим массив выбранных цветов в консоль для отладки
-        console.log("Выбранные цвета: ", selectedColors);
-        
-        // Отправляем данные в бота
-        tg.sendData(JSON.stringify(selectedColors));
-
-        // Закрываем WebView (если открыто внутри Telegram)
-        tg.close();
     }
 </script>
 
 </body>
 </html>
+
 
