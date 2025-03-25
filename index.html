@@ -28,7 +28,7 @@
     function chooseColor(color, button) {
         if (selectedColors.includes(color)) return;
         selectedColors.push(color);
-        
+
         // Скрываем выбранную кнопку
         button.style.display = "none";
 
@@ -38,25 +38,22 @@
         }
     }
 
-    // Асинхронная функция для отправки результата
     async function sendResult() {
         try {
             // Отправка данных через Telegram WebApp
             await Telegram.WebApp.sendData(JSON.stringify(selectedColors));
-            
-            // Скрываем кнопку отправки
+
+            // Скрываем кнопку отправки после успешной отправки данных
             document.getElementById("send-result").style.display = "none";
 
             // Закрываем веб-приложение Telegram
             Telegram.WebApp.close();
         } catch (error) {
             console.error("Ошибка при отправке данных:", error);
-            alert("Что-то пошло не так. Попробуйте снова.");
+            alert("Произошла ошибка при отправке данных. Попробуйте снова.");
         }
     }
 </script>
 
 </body>
 </html>
-
-
