@@ -1,94 +1,109 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Тест Люшера</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-        }
-        #color-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .color-btn {
-            width: 80px;
-            height: 80px;
-            border: none;
-            cursor: pointer;
-        }
-        #send-btn {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        #status-message {
-            display: none;
-            margin-top: 20px;
-            font-size: 18px;
-            font-weight: bold;
-            color: green;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тест Люшера</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    #color-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .color-btn {
+      width: 80px;
+      height: 80px;
+      border: none;
+      cursor: pointer;
+    }
+    #send-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #status-message {
+      display: none;
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      color: green;
+    }
+  </style>
 </head>
 <body>
 
 <h2>Выбери самый приятный цвет</h2>
 <div id="color-grid">
-    <button class="color-btn" style="background: blue;" onclick="chooseColor('blue')"></button>
-    <button class="color-btn" style="background: red;" onclick="chooseColor('red')"></button>
-    <button class="color-btn" style="background: green;" onclick="chooseColor('green')"></button>
-    <button class="color-btn" style="background: yellow;" onclick="chooseColor('yellow')"></button>
-    <button class="color-btn" style="background: purple;" onclick="chooseColor('purple')"></button>
-    <button class="color-btn" style="background: brown;" onclick="chooseColor('brown')"></button>
-    <button class="color-btn" style="background: black;" onclick="chooseColor('black')"></button>
-    <button class="color-btn" style="background: gray;" onclick="chooseColor('gray')"></button>
+  <button class="color-btn" style="background: blue;" onclick="chooseColor('blue', this)"></button>
+  <button class="color-btn" style="background: red;" onclick="chooseColor('red', this)"></button>
+  <button class="color-btn" style="background: green;" onclick="chooseColor('green', this)"></button>
+  <button class="color-btn" style="background: yellow;" onclick="chooseColor('yellow', this)"></button>
+  <button class="color-btn" style="background: purple;" onclick="chooseColor('purple', this)"></button>
+  <button class="color-btn" style="background: brown;" onclick="chooseColor('brown', this)"></button>
+  <button class="color-btn" style="background: black;" onclick="chooseColor('black', this)"></button>
+  <button class="color-btn" style="background: gray;" onclick="chooseColor('gray', this)"></button>
 </div>
 
 <button id="send-btn" onclick="sendResult()">Отправить</button>
 <p id="status-message">Результаты получены, возвращайся в бот</p>
 
 <script>
-    let chosenColors = [];
+  // Массив для хранения выбранных цветов
+  let chosenColors = [];
 
-    function chooseColor(color) {
-        chosenColors.push(color);
-        document.querySelector(`button[style="background: ${color};"]`).remove();
+  function chooseColor(color, btnElement) {
+    // Если цвет уже выбран, не добавляем
+    if (chosenColors.includes(color)) return;
+    
+    chosenColors.push(color);
+    
+    // Удаляем кнопку, чтобы визуально показать выбор
+    btnElement.remove();
+  }
+
+  function sendResult() {
+    // Проверяем, выбраны ли все 8 цветов
+    if (chosenColors.length < 8) {
+      alert("Выберите все 8 цветов перед отправкой!");
+      return;
     }
 
-    function sendResult() {
-        if (chosenColors.length < 8) {
-            alert("Выбери все цвета перед отправкой!");
-            return;
-        }
+    // Формируем payload в том формате, который ожидает Make
+    const payload = { colors: chosenColors };
+    console.log("Отправляем payload:", payload);
 
-        fetch("https://hook.eu2.make.com/xui59pgz9z62yeav743xawy2jlegiyar", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ colors: chosenColors })
-        })
-        .then(response => {
-            if (response.ok) {
-                document.getElementById("send-btn").style.display = "none";
-                document.getElementById("status-message").style.display = "block";
-            } else {
-                alert("Ошибка при отправке данных");
-            }
-        })
-        .catch(error => {
-            console.error("Ошибка:", error);
-            alert("Ошибка при отправке данных");
+    fetch("https://hook.eu2.make.com/xui59pgz9z62yeav743xawy2jlegiyar", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    })
+    .then(response => {
+      if (response.ok) {
+        // Если ответ ок, скрываем кнопку и показываем сообщение
+        document.getElementById("send-btn").style.display = "none";
+        document.getElementById("status-message").style.display = "block";
+      } else {
+        return response.text().then(text => {
+          console.error("Ошибка при отправке данных:", text);
+          alert("Ошибка при отправке данных: " + text);
         });
-    }
+      }
+    })
+    .catch(error => {
+      console.error("Ошибка запроса:", error);
+      alert("Ошибка при соединении с сервером!");
+    });
+  }
 </script>
 
 </body>
