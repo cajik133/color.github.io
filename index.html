@@ -76,22 +76,25 @@
   function sendResult() {
     const webhookUrl = "https://hook.eu2.make.com/6jj3m26b25ll7tv8cuz9vg55pojnbap6";
 
-    // Отправляем выбранные цвета в виде чисел
+    // Отправляем выбранные цвета в виде чисел и текстовое сообщение
     fetch(webhookUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded"
       },
       body: new URLSearchParams({
-        "colors": selectedColors.join(',')  // Передаем выбранные цвета как числа
+        "colors": selectedColors.join(','),  // Передаем выбранные цвета как числа
+        "text": "Результаты теста Люшера отправлены!"  // Добавляем текст
       })
     })
     .then(response => {
       if (response.ok) {
-        // Прячем кнопку отправки и показываем сообщение
+        // Скрываем кнопку и показываем сообщение
         document.getElementById('send-button').style.display = 'none';
         document.getElementById('status-message').style.display = 'block';
-        window.Telegram.WebApp.close(); // Закрыть веб-версию Telegram
+        
+        // Закрываем веб-страницу в Telegram WebApp
+        window.Telegram.WebApp.close();
       } else {
         return response.text().then(text => { throw new Error(text); });
       }
