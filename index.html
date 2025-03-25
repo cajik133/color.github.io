@@ -50,7 +50,7 @@
 </div>
 
 <button id="send-result" onclick="sendResult()">Отправить</button>
-
+<p id="status-message" style="display: none; font-weight: bold; margin-top: 20px;"</p>
 <script>
     let selectedColors = [];
 
@@ -82,7 +82,12 @@
         .then(response => response.json())
         .then(data => {
             console.log('Data sent successfully', data);
-
+// Показываем сообщение после успешной отправки
+            document.getElementById("status-message").textContent = "Результаты получены, возвращайся в бот.";
+            document.getElementById("status-message").style.display = "block";
+            
+            // Прячем кнопку "Отправить"
+            document.getElementById("send-result").style.display = "none";
             // Закрытие страницы после отправки
             window.close();
         })
