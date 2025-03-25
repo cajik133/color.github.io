@@ -76,32 +76,28 @@
   function sendResult() {
     const webhookUrl = "https://hook.eu2.make.com/6jj3m26b25ll7tv8cuz9vg55pojnbap6";
 
-    // Отправляем выбранные цвета в виде чисел и текстовое сообщение
+    // Отправляем массив цифр, без дополнительных данных
     fetch(webhookUrl, {
       method: "POST",
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
+        "Content-Type": "application/json"
       },
-      body: new URLSearchParams({
-        "colors": selectedColors.join(','),  // Передаем выбранные цвета как числа
-        "text": "Результаты теста Люшера отправлены!"  // Добавляем текст
-      })
+      body: JSON.stringify(selectedColors) // Только цифры цветов
     })
     .then(response => {
       if (response.ok) {
-        // Скрываем кнопку и показываем сообщение
-        document.getElementById('send-button').style.display = 'none';
-        document.getElementById('status-message').style.display = 'block';
-        
-        // Закрываем веб-страницу в Telegram WebApp
-        window.Telegram.WebApp.close();
+        document.getElementById('status-message').style.display = 'block';  // Показать сообщение об успешной отправке
+        document.getElementById('send-button').style.display = 'none';  // Скрыть кнопку
+        setTimeout(() => {
+          window.Telegram.WebApp.close();  // Закрыть веб-приложение
+        }, 3000);  // Через 3 секунды
       } else {
-        return response.text().then(text => { throw new Error(text); });
+        alert("Ошибка при отправке данных.");
       }
     })
     .catch(error => {
       console.error("Ошибка при отправке данных:", error);
-      alert("Ошибка при отправке данных. Попробуй снова.");
+      alert("Ошибка при отправке данных.");
     });
   }
 </script>
