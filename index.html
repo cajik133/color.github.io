@@ -24,6 +24,22 @@
 <button id="send-result" onclick="sendResult()">Отправить</button>
 
 <script src="script.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const sendButton = document.getElementById("send-results");
+
+    sendButton.addEventListener("click", function() {
+        // Отправляем данные (тут можно добавить логику отправки)
+        alert("Результаты отправлены!"); 
+
+        // 1. Скрываем кнопку
+        sendButton.style.display = "none";
+
+        // 2. Закрываем вкладку (если нужно)
+        window.close();
+    });
+});
+</script>
 
 </body>
 </html>
