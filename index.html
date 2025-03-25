@@ -18,8 +18,8 @@
       margin-top: 20px;
     }
     .color-btn {
-      width: 80px;
-      height: 80px;
+      width: 50px;
+      height: 50px;
       border: none;
       cursor: pointer;
     }
@@ -28,69 +28,62 @@
       padding: 10px 20px;
       font-size: 16px;
       cursor: pointer;
-      display: none;
-    }
-    #status-msg {
-      margin-top: 20px;
-      font-weight: bold;
     }
   </style>
 </head>
 <body>
 
-  <h2>Выбери цвета в порядке предпочтения</h2>
-  <div id="color-grid">
-    <button class="color-btn" style="background: blue;" onclick="chooseColor('blue')"></button>
-    <button class="color-btn" style="background: red;" onclick="chooseColor('red')"></button>
-    <button class="color-btn" style="background: green;" onclick="chooseColor('green')"></button>
-    <button class="color-btn" style="background: yellow;" onclick="chooseColor('yellow')"></button>
-    <button class="color-btn" style="background: brown;" onclick="chooseColor('brown')"></button>
-    <button class="color-btn" style="background: black;" onclick="chooseColor('black')"></button>
-    <button class="color-btn" style="background: gray;" onclick="chooseColor('gray')"></button>
-    <button class="color-btn" style="background: purple;" onclick="chooseColor('purple')"></button>
-  </div>
+<h2>Выбери самый приятный цвет</h2>
+<div id="color-grid">
+  <button class="color-btn" style="background: blue;" onclick="chooseColor('blue')"></button>
+  <button class="color-btn" style="background: red;" onclick="chooseColor('red')"></button>
+  <button class="color-btn" style="background: green;" onclick="chooseColor('green')"></button>
+  <button class="color-btn" style="background: yellow;" onclick="chooseColor('yellow')"></button>
+  <button class="color-btn" style="background: brown;" onclick="chooseColor('brown')"></button>
+  <button class="color-btn" style="background: black;" onclick="chooseColor('black')"></button>
+  <button class="color-btn" style="background: gray;" onclick="chooseColor('gray')"></button>
+  <button class="color-btn" style="background: purple;" onclick="chooseColor('purple')"></button>
+</div>
 
-  <button id="send-btn" onclick="sendResult()">Отправить</button>
-  <p id="status-msg"></p>
+<button id="send-btn" onclick="sendResult()">Отправить</button>
 
-  <script>
-    let selectedColors = [];
+<script>
+  let selectedColors = [];
 
-    function chooseColor(color) {
-      if (!selectedColors.includes(color)) {
-        selectedColors.push(color);
-        document.querySelectorAll('.color-btn').forEach(btn => {
-          if (btn.style.background === color) {
-            btn.style.visibility = 'hidden';
-          }
-        });
-      }
-      if (selectedColors.length === 8) {
-        document.getElementById('send-btn').style.display = 'block';
-      }
-    }
+  function chooseColor(color) {
+    selectedColors.push(color);
+    console.log("Выбранные цвета:", selectedColors);  // Логируем выбранные цвета
+    event.target.style.display = 'none';  // Убираем кнопку
+  }
 
-    function sendResult() {
-      const webhookUrl = "https://hook.eu2.make.com/6jj3m26b25ll7tv8cuz9vg55pojnbap6";
+  function sendResult() {
+    const webhookUrl = "https://hook.eu2.make.com/6jj3m26b25ll7tv8cuz9vg55pojnbap6";
 
-      fetch(webhookUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ colors: selectedColors })
-      })
-      .then(response => response.text()) // исправлено с response.json() на response.text()
-      .then(data => {
-        document.getElementById('status-msg').innerText = "Результаты получены. Возвращайся в бот!";
-        document.getElementById('send-btn').style.display = 'none';
-      })
-      .catch(error => {
-        console.error("Ошибка при отправке данных:", error);
-        document.getElementById('status-msg').innerText = "Ошибка при отправке. Попробуй ещё раз.";
-      });
-    }
-  </script>
+    const payload = { colors: selectedColors };
+
+    console.log("Отправка данных на вебхук:", payload);  // Логируем отправляемые данные
+
+    fetch(webhookUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    })
+    .then(response => {
+      console.log("Ответ от сервера:", response);
+      return response.text(); // Читаем ответ как текст, а не JSON
+    })
+    .then(data => {
+      console.log("Ответ сервера:", data);
+      document.body.innerHTML = "<h2>Результаты получены. Возвращайся в бот!</h2>";
+    })
+    .catch(error => {
+      console.error("Ошибка при отправке данных:", error);
+      alert("Ошибка при отправке данных. Попробуйте еще раз.");
+    });
+  }
+</script>
 
 </body>
 </html>
