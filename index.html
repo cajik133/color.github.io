@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Тест Люшера</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -40,17 +39,37 @@
 
     async function sendResult() {
         try {
-            // Отправка данных через Telegram WebApp
-            await Telegram.WebApp.sendData(JSON.stringify(selectedColors));
+            // Логируем выбранные цвета
+            console.log("Выбранные цвета:", selectedColors);
 
-            // Скрываем кнопку отправки после успешной отправки данных
+            // Подготовка данных для отправки в Make (Webhook URL)
+            const webhookUrl = "https://hook.eu2.make.com/your-webhook-url"; // Замените на ваш URL
+
+            const response = await fetch(webhookUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    selectedColors: selectedColors
+                }),
+            });
+
+            // Если отправка прошла успешно
+            if (response.ok) {
+                console.log("Данные успешно отправлены!");
+                // Закрываем WebApp и скрываем кнопку
+                Telegram.WebApp.close();
+            } else {
+                console.error("Ошибка при отправке данных:", response.statusText);
+            }
+            
+            // Скрыть кнопку отправки
             document.getElementById("send-result").style.display = "none";
 
-            // Закрываем веб-приложение Telegram
-            Telegram.WebApp.close();
         } catch (error) {
             console.error("Ошибка при отправке данных:", error);
-            alert("Произошла ошибка при отправке данных. Попробуйте снова.");
+            alert("Произошла ошибка при отправке данных.");
         }
     }
 </script>
