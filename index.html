@@ -18,71 +18,81 @@
       margin-top: 20px;
     }
     .color-btn {
-      width: 50px;
-      height: 50px;
+      width: 80px;
+      height: 80px;
       border: none;
       cursor: pointer;
     }
     #send-btn {
       margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 16px;
+      padding: 10px;
+      background-color: #28a745;
+      color: white;
+      border: none;
       cursor: pointer;
+      display: none;
     }
   </style>
 </head>
 <body>
 
-<h2>Выбери самый приятный цвет</h2>
-<div id="color-grid">
-  <button class="color-btn" style="background: blue;" onclick="chooseColor('blue')"></button>
-  <button class="color-btn" style="background: red;" onclick="chooseColor('red')"></button>
-  <button class="color-btn" style="background: green;" onclick="chooseColor('green')"></button>
-  <button class="color-btn" style="background: yellow;" onclick="chooseColor('yellow')"></button>
-  <button class="color-btn" style="background: brown;" onclick="chooseColor('brown')"></button>
-  <button class="color-btn" style="background: black;" onclick="chooseColor('black')"></button>
-  <button class="color-btn" style="background: gray;" onclick="chooseColor('gray')"></button>
-  <button class="color-btn" style="background: purple;" onclick="chooseColor('purple')"></button>
-</div>
-
+<h2>Выбери цвета по порядку</h2>
+<div id="color-grid"></div>
 <button id="send-btn" onclick="sendResult()">Отправить</button>
 
 <script>
-  let selectedColors = [];
+  const webhookURL = "https://hook.eu2.make.com/6jj3m26b25ll7tv8cuz9vg55pojnbap6";
 
-  function chooseColor(color) {
-    selectedColors.push(color);
-    console.log("Выбранные цвета:", selectedColors);  // Логируем выбранные цвета
-    event.target.style.display = 'none';  // Убираем кнопку
+  const colors = [
+    { color: "blue", id: 1 },
+    { color: "green", id: 2 },
+    { color: "red", id: 3 },
+    { color: "yellow", id: 4 },
+    { color: "purple", id: 5 },
+    { color: "brown", id: 6 },
+    { color: "black", id: 7 },
+    { color: "gray", id: 8 }
+  ];
+
+  const selectedOrder = [];
+
+  function renderColors() {
+    const grid = document.getElementById("color-grid");
+    grid.innerHTML = "";
+    colors.forEach(({ color, id }) => {
+      const btn = document.createElement("button");
+      btn.classList.add("color-btn");
+      btn.style.background = color;
+      btn.onclick = () => selectColor(id, btn);
+      grid.appendChild(btn);
+    });
+  }
+
+  function selectColor(id, btn) {
+    selectedOrder.push(id);
+    btn.remove(); // Удаляем кнопку после выбора
+    if (selectedOrder.length === colors.length) {
+      document.getElementById("send-btn").style.display = "block";
+    }
   }
 
   function sendResult() {
-    const webhookUrl = "https://hook.eu2.make.com/6jj3m26b25ll7tv8cuz9vg55pojnbap6";
-
-    const payload = { colors: selectedColors };
-
-    console.log("Отправка данных на вебхук:", payload);  // Логируем отправляемые данные
-
-    fetch(webhookUrl, {
+    fetch(webhookURL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ order: selectedOrder })
     })
-    .then(response => {
-      console.log("Ответ от сервера:", response);
-      return response.text(); // Читаем ответ как текст, а не JSON
-    })
+    .then(response => response.json())
     .then(data => {
-      console.log("Ответ сервера:", data);
-      document.body.innerHTML = "<h2>Результаты получены. Возвращайся в бот!</h2>";
+      console.log("Успешно отправлено:", data);
+      document.body.innerHTML = "<h2>Результаты получены, возвращайся в бот!</h2>";
     })
-    .catch(error => {
-      console.error("Ошибка при отправке данных:", error);
-      alert("Ошибка при отправке данных. Попробуйте еще раз.");
-    });
+    .catch(error => console.error("Ошибка:", error));
   }
+
+  renderColors();
 </script>
 
 </body>
