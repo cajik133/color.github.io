@@ -9,58 +9,41 @@
 </head>
 <body>
 
-    <h2>Выбери самый приятный цвет</h2>
-    <div id="color-grid">
-        <button class="color-btn" style="background: blue;" onclick="chooseColor('blue')"></button>
-        <button class="color-btn" style="background: red;" onclick="chooseColor('red')"></button>
-        <button class="color-btn" style="background: green;" onclick="chooseColor('green')"></button>
-        <button class="color-btn" style="background: yellow;" onclick="chooseColor('yellow')"></button>
-    </div>
+<h2>Выбери самый приятный цвет</h2>
+<div id="color-grid">
+    <button class="color-btn" style="background: blue;" onclick="chooseColor(1, this)"></button>
+    <button class="color-btn" style="background: red;" onclick="chooseColor(2, this)"></button>
+    <button class="color-btn" style="background: green;" onclick="chooseColor(3, this)"></button>
+    <button class="color-btn" style="background: yellow;" onclick="chooseColor(4, this)"></button>
+    <button class="color-btn" style="background: purple;" onclick="chooseColor(5, this)"></button>
+    <button class="color-btn" style="background: brown;" onclick="chooseColor(6, this)"></button>
+    <button class="color-btn" style="background: gray;" onclick="chooseColor(7, this)"></button>
+    <button class="color-btn" style="background: black;" onclick="chooseColor(8, this)"></button>
+</div>
 
-    <button id="submit-btn" onclick="sendResult()">Отправить</button>
+<button id="submit-btn" onclick="sendResults()" style="display: none;">Отправить</button>
 
-    <script>
-        let selectedColor = null;
+<script>
+    let chosenColors = [];
 
-        function chooseColor(color) {
-            selectedColor = color;
-            alert("Вы выбрали: " + color);
+    function chooseColor(colorId, element) {
+        chosenColors.push(colorId);
+        element.style.display = "none"; // Удаляем кнопку после нажатия
+
+        // Показываем кнопку "Отправить", когда все цвета выбраны
+        if (chosenColors.length === 8) {
+            document.getElementById("submit-btn").style.display = "block";
         }
+    }
 
-        function sendResult() {
-            if (!selectedColor) {
-                alert("Сначала выберите цвет!");
-                return;
-            }
-
-            // Получаем данные о пользователе из Telegram Web App
-            const tg = window.Telegram.WebApp;
-            const userId = tg.initDataUnsafe?.user?.id || "неизвестный";
-
-            // Отправляем данные в Make через Webhook
-            fetch("https://hook.eu2.make.com/itvdwrq6pu2msdhk52bcg7ycfv8hucrg", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    user_id: userId,
-                    color: selectedColor
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert("Результаты отправлены!");
-                document.getElementById("submit-btn").style.display = "none"; // Скрыть кнопку
-                tg.close(); // Закрыть WebView (если открыт в Telegram)
-            })
-            .catch(error => {
-                console.error("Ошибка:", error);
-                alert("Ошибка отправки данных.");
-            });
-        }
-    </script>
+    function sendResults() {
+        const tg = window.Telegram.WebApp;
+        tg.sendData(JSON.stringify(chosenColors)); // Отправляем данные в бота
+        tg.close(); // Закрываем WebView
+    }
+</script>
 
 </body>
 </html>
+
 
