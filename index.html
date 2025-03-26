@@ -18,23 +18,20 @@
       margin-top: 20px;
     }
     .color-btn {
-      width: 50px;
-      height: 50px;
+      width: 60px;
+      height: 60px;
       border: none;
       cursor: pointer;
     }
-    #send-button {
+    #send-btn {
       margin-top: 20px;
       padding: 10px;
       font-size: 16px;
+      background-color: #28a745;
+      color: white;
+      border: none;
       cursor: pointer;
-    }
-    #status-message {
       display: none;
-      margin-top: 20px;
-      font-size: 18px;
-      font-weight: bold;
-      color: green;
     }
   </style>
 </head>
@@ -42,67 +39,58 @@
 
 <h2>Выбери самый приятный цвет</h2>
 <div id="color-grid">
-  <button class="color-btn" style="background: blue;" onclick="chooseColor(1, this)"></button>
-  <button class="color-btn" style="background: red;" onclick="chooseColor(2, this)"></button>
-  <button class="color-btn" style="background: green;" onclick="chooseColor(3, this)"></button>
-  <button class="color-btn" style="background: yellow;" onclick="chooseColor(4, this)"></button>
-  <button class="color-btn" style="background: purple;" onclick="chooseColor(5, this)"></button>
-  <button class="color-btn" style="background: brown;" onclick="chooseColor(6, this)"></button>
-  <button class="color-btn" style="background: gray;" onclick="chooseColor(7, this)"></button>
-  <button class="color-btn" style="background: black;" onclick="chooseColor(8, this)"></button>
+  <button class="color-btn" style="background: blue;" onclick="chooseColor(1)"></button>
+  <button class="color-btn" style="background: red;" onclick="chooseColor(2)"></button>
+  <button class="color-btn" style="background: green;" onclick="chooseColor(3)"></button>
+  <button class="color-btn" style="background: yellow;" onclick="chooseColor(4)"></button>
+  <button class="color-btn" style="background: brown;" onclick="chooseColor(5)"></button>
+  <button class="color-btn" style="background: black;" onclick="chooseColor(6)"></button>
+  <button class="color-btn" style="background: gray;" onclick="chooseColor(7)"></button>
+  <button class="color-btn" style="background: purple;" onclick="chooseColor(8)"></button>
 </div>
 
-<button id="send-button" onclick="sendResult()" disabled>Отправить</button>
-<p id="status-message">Результаты получены, возвращайся в бот!</p>
+<button id="send-btn" onclick="sendResult()">Отправить</button>
 
 <script>
   let selectedColors = [];
-  let userId = Telegram.WebApp.initDataUnsafe.user.id; // Получаем user_id из Telegram Web App
+  let userId = null;
 
-  function chooseColor(colorCode, btnElement) {
-    // Если цвет уже выбран, не добавляем
-    if (selectedColors.includes(colorCode)) return;
+  // Получаем user_id из Telegram WebApp
+  Telegram.WebApp.ready();
+  if (Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
+    userId = Telegram.WebApp.initDataUnsafe.user.id;
+  }
 
-    selectedColors.push(colorCode);
-
-    // Удаляем кнопку
-    btnElement.remove();
-
-    // Если выбраны все 8 цветов, активируем кнопку отправки
+  function chooseColor(color) {
+    if (!selectedColors.includes(color)) {
+      selectedColors.push(color);
+      document.querySelectorAll(".color-btn")[color - 1].style.visibility = "hidden";
+    }
     if (selectedColors.length === 8) {
-      document.getElementById('send-button').disabled = false;
+      document.getElementById("send-btn").style.display = "block";
     }
   }
 
   function sendResult() {
-    const webhookUrl = "https://your-webhook-url.com"; // Замените на ваш реальный URL
+    if (!userId) {
+      alert("Ошибка: Telegram ID не найден");
+      return;
+    }
 
-    const payload = {
-      user_id: userId, // Передаем user_id
-      colors: selectedColors
-    };
-
-    fetch(webhookUrl, {
+    fetch("https://hook.eu2.make.com/qhbbx786kvg96gvpgru3kacap9elhtkf", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: userId, colors: selectedColors })
     })
-    .then(response => {
-      if (response.ok) {
-        document.getElementById('status-message').style.display = 'block';
-        document.getElementById('send-button').style.display = 'none';
-        setTimeout(() => {
-          window.Telegram.WebApp.close(); // Закрываем WebApp
-        }, 2000); // Закрытие через 2 секунды
-      } else {
-        alert("Ошибка при отправке данных. Попробуйте снова.");
-      }
+    .then(response => response.json())
+    .then(data => {
+      console.log("Успех:", data);
+      document.getElementById("send-btn").remove();
+      document.body.innerHTML += "<p>Результаты получены, возвращайся в бот.</p>";
     })
     .catch(error => {
-      console.error("Ошибка при отправке данных:", error);
-      alert("Ошибка при отправке данных. Попробуйте снова.");
+      console.error("Ошибка:", error);
+      alert("Ошибка при отправке данных");
     });
   }
 </script>
