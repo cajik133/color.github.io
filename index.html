@@ -18,86 +18,90 @@
       margin-top: 20px;
     }
     .color-btn {
-      width: 80px;
-      height: 80px;
+      width: 60px;
+      height: 60px;
       border: none;
       cursor: pointer;
     }
-    #send-btn {
+    #submit-btn {
       margin-top: 20px;
       padding: 10px 20px;
       font-size: 16px;
+      background: #008CBA;
+      color: white;
+      border: none;
       cursor: pointer;
+    }
+    #submit-btn:disabled {
+      background: gray;
+      cursor: not-allowed;
+    }
+    #message {
+      display: none;
+      margin-top: 20px;
+      font-size: 18px;
+      color: green;
     }
   </style>
 </head>
 <body>
 
 <h2>Выбери самый приятный цвет</h2>
-<div id="color-grid">
-  <button class="color-btn" style="background: blue;" onclick="chooseColor(1)"></button>
-  <button class="color-btn" style="background: red;" onclick="chooseColor(2)"></button>
-  <button class="color-btn" style="background: green;" onclick="chooseColor(3)"></button>
-  <button class="color-btn" style="background: yellow;" onclick="chooseColor(4)"></button>
-</div>
-
-<button id="send-btn" onclick="sendResult()">Отправить</button>
+<div id="color-grid"></div>
+<button id="submit-btn" onclick="sendResult()">Отправить</button>
+<p id="message">Результаты получены! Вернись в бота.</p>
 
 <script>
+  let colors = [
+    { name: 'blue', hex: '#0000FF' },
+    { name: 'red', hex: '#FF0000' },
+    { name: 'green', hex: '#008000' },
+    { name: 'yellow', hex: '#FFFF00' },
+    { name: 'purple', hex: '#800080' },
+    { name: 'black', hex: '#000000' },
+    { name: 'gray', hex: '#808080' },
+    { name: 'brown', hex: '#A52A2A' }
+  ];
   let selectedColors = [];
-  let userId = null;
+  let userId = Telegram.WebApp.initDataUnsafe?.user?.id || null;
 
-  // Получение user_id из Telegram WebApp или URL
-  function getUserId() {
-    if (Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
-      return Telegram.WebApp.initDataUnsafe.user.id;
-    } else {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get("user_id");
-    }
-  }
-
-  // Инициализация user_id
-  userId = getUserId();
-  console.log("User ID:", userId);
-
-  function chooseColor(color) {
-    if (!selectedColors.includes(color)) {
-      selectedColors.push(color);
-      document.querySelectorAll(".color-btn")[color - 1].style.visibility = "hidden";
-    }
+  function renderColors() {
+    const grid = document.getElementById('color-grid');
+    grid.innerHTML = '';
+    colors.forEach((color, index) => {
+      let btn = document.createElement('button');
+      btn.className = 'color-btn';
+      btn.style.background = color.hex;
+      btn.onclick = function () {
+        selectedColors.push(index + 1);
+        colors.splice(index, 1);
+        renderColors();
+      };
+      grid.appendChild(btn);
+    });
   }
 
   function sendResult() {
     if (!userId) {
-      alert("Ошибка: user_id не найден!");
+      alert('Ошибка: не найден Telegram ID');
       return;
     }
 
-    fetch("https://hook.eu2.make.com/6jj3m26b25ll7tv8cuz9vg55pojnbap6", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        user_id: userId,
-        colors: selectedColors
-      })
+    fetch('https://hook.eu2.make.com/6jj3m26b25ll7tv8cuz9vg55pojnbap6', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, colors: selectedColors })
     })
     .then(response => response.json())
     .then(data => {
-      console.log("Успешно отправлено:", data);
-      document.getElementById("send-btn").remove();
-      let message = document.createElement("p");
-      message.textContent = "Результаты получены! Вернись в бот.";
-      document.body.appendChild(message);
+      document.getElementById('submit-btn').style.display = 'none';
+      document.getElementById('message').style.display = 'block';
     })
-    .catch(error => {
-      console.error("Ошибка при отправке данных:", error);
-    });
+    .catch(error => console.error('Ошибка при отправке данных:', error));
   }
+
+  renderColors();
 </script>
 
 </body>
 </html>
-
