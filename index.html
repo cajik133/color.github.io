@@ -18,18 +18,15 @@
       margin-top: 20px;
     }
     .color-btn {
-      width: 60px;
-      height: 60px;
+      width: 80px;
+      height: 80px;
       border: none;
       cursor: pointer;
     }
-    #submit-btn {
+    #send-btn {
       margin-top: 20px;
       padding: 10px 20px;
       font-size: 16px;
-      background: green;
-      color: white;
-      border: none;
       cursor: pointer;
     }
   </style>
@@ -42,46 +39,46 @@
   <button class="color-btn" style="background: red;" onclick="chooseColor(2)"></button>
   <button class="color-btn" style="background: green;" onclick="chooseColor(3)"></button>
   <button class="color-btn" style="background: yellow;" onclick="chooseColor(4)"></button>
-  <button class="color-btn" style="background: brown;" onclick="chooseColor(5)"></button>
-  <button class="color-btn" style="background: black;" onclick="chooseColor(6)"></button>
-  <button class="color-btn" style="background: gray;" onclick="chooseColor(7)"></button>
-  <button class="color-btn" style="background: purple;" onclick="chooseColor(8)"></button>
 </div>
 
-<button id="submit-btn" onclick="sendResult()">Отправить</button>
+<button id="send-btn" onclick="sendResult()">Отправить</button>
 
 <script>
   let selectedColors = [];
+  let userId = null;
 
-  function chooseColor(colorId) {
-    selectedColors.push(colorId);
-    event.target.remove(); // Удаляет кнопку после выбора
+  // Получение user_id из Telegram WebApp или URL
+  function getUserId() {
+    if (Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
+      return Telegram.WebApp.initDataUnsafe.user.id;
+    } else {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get("user_id");
+    }
+  }
+
+  // Инициализация user_id
+  userId = getUserId();
+  console.log("User ID:", userId);
+
+  function chooseColor(color) {
+    if (!selectedColors.includes(color)) {
+      selectedColors.push(color);
+      document.querySelectorAll(".color-btn")[color - 1].style.visibility = "hidden";
+    }
   }
 
   function sendResult() {
-    const user = Telegram.WebApp.initDataUnsafe.user;
-    
-    if (!user || !user.id) {
-      alert("Ошибка: не удалось получить Telegram ID. Перезапустите тест через бота.");
+    if (!userId) {
+      alert("Ошибка: user_id не найден!");
       return;
     }
 
-    const userId = user.id;
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const user_id = urlParams.get("user_id");
-
-    // Проверяем, получили ли мы user_id
-    if (user_id) {
-        console.log("User ID получен:", user_id);
-    } else {
-        console.log("User ID не найден!");
-    }
-
-    
-    fetch("https://hook.eu2.make.com/6jj3m26b25ll7tv8cuz9vg55pojnbap6", {
+    fetch("https://hook.eu2.make.com/qhbbx786kvg96gvpgru3kacap9elhtkf", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({
         user_id: userId,
         colors: selectedColors
@@ -89,16 +86,18 @@
     })
     .then(response => response.json())
     .then(data => {
-      document.getElementById("submit-btn").remove();
+      console.log("Успешно отправлено:", data);
+      document.getElementById("send-btn").remove();
       let message = document.createElement("p");
-      message.innerText = "Результаты получены, возвращайся в бот!";
+      message.textContent = "Результаты получены! Вернись в бот.";
       document.body.appendChild(message);
     })
     .catch(error => {
-      alert("Ошибка при отправке данных: " + error);
+      console.error("Ошибка при отправке данных:", error);
     });
   }
 </script>
 
 </body>
 </html>
+
