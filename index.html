@@ -23,15 +23,14 @@
       border: none;
       cursor: pointer;
     }
-    #send-btn {
+    #submit-btn {
       margin-top: 20px;
-      padding: 10px;
+      padding: 10px 20px;
       font-size: 16px;
-      background-color: #28a745;
+      background: green;
       color: white;
       border: none;
       cursor: pointer;
-      display: none;
     }
   </style>
 </head>
@@ -49,48 +48,43 @@
   <button class="color-btn" style="background: purple;" onclick="chooseColor(8)"></button>
 </div>
 
-<button id="send-btn" onclick="sendResult()">Отправить</button>
+<button id="submit-btn" onclick="sendResult()">Отправить</button>
 
 <script>
   let selectedColors = [];
-  let userId = null;
 
-  // Получаем user_id из Telegram WebApp
-  Telegram.WebApp.ready();
-  if (Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
-    userId = Telegram.WebApp.initDataUnsafe.user.id;
-  }
-
-  function chooseColor(color) {
-    if (!selectedColors.includes(color)) {
-      selectedColors.push(color);
-      document.querySelectorAll(".color-btn")[color - 1].style.visibility = "hidden";
-    }
-    if (selectedColors.length === 8) {
-      document.getElementById("send-btn").style.display = "block";
-    }
+  function chooseColor(colorId) {
+    selectedColors.push(colorId);
+    event.target.remove(); // Удаляет кнопку после выбора
   }
 
   function sendResult() {
-    if (!userId) {
-      alert("Ошибка: Telegram ID не найден");
+    const user = Telegram.WebApp.initDataUnsafe.user;
+    
+    if (!user || !user.id) {
+      alert("Ошибка: не удалось получить Telegram ID. Перезапустите тест через бота.");
       return;
     }
+
+    const userId = user.id;
 
     fetch("https://hook.eu2.make.com/qhbbx786kvg96gvpgru3kacap9elhtkf", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_id: userId, colors: selectedColors })
+      body: JSON.stringify({
+        user_id: userId,
+        colors: selectedColors
+      })
     })
     .then(response => response.json())
     .then(data => {
-      console.log("Успех:", data);
-      document.getElementById("send-btn").remove();
-      document.body.innerHTML += "<p>Результаты получены, возвращайся в бот.</p>";
+      document.getElementById("submit-btn").remove();
+      let message = document.createElement("p");
+      message.innerText = "Результаты получены, возвращайся в бот!";
+      document.body.appendChild(message);
     })
     .catch(error => {
-      console.error("Ошибка:", error);
-      alert("Ошибка при отправке данных");
+      alert("Ошибка при отправке данных: " + error);
     });
   }
 </script>
